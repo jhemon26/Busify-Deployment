@@ -1,0 +1,1618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Busify - Bangladesh Bus Booking</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+    min-height: 100vh;
+    padding: 32px 16px;
+    font-family: 'DM Sans', -apple-system, sans-serif;
+  }
+
+  .app-container {
+    max-width: 420px;
+    margin: 0 auto;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+    background: #000;
+  }
+
+  /* Status bar */
+  .status-bar {
+    background: #000;
+    color: white;
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .status-right { display: flex; gap: 6px; align-items: center; }
+
+  /* Screens */
+  .screen { display: none; min-height: 700px; background: #000; }
+  .screen.active { display: block; }
+
+  /* Header */
+  .main-header {
+    background: #0a0a0a;
+    padding: 20px 16px;
+    border-bottom: 1px solid #1a1a1a;
+    position: relative;
+    overflow: hidden;
+  }
+  .glow-right { position: absolute; top: -50px; right: -50px; width: 180px; height: 180px; background: radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 70%); pointer-events: none; }
+  .glow-left { position: absolute; top: -50px; left: -50px; width: 180px; height: 180px; background: radial-gradient(circle, rgba(6,182,212,0.1) 0%, transparent 70%); pointer-events: none; }
+  .header-content { display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 1; }
+
+  .logo-wrap { display: flex; align-items: center; gap: 12px; }
+  .logo-box {
+    width: 46px; height: 46px;
+    background: linear-gradient(135deg, #10b981, #06b6d4);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 16px rgba(16,185,129,0.3);
+  }
+  .app-name { color: white; font-size: 24px; font-weight: 700; letter-spacing: -1px; }
+  .app-tagline { color: #06b6d4; font-size: 11px; font-weight: 500; margin-top: 3px; }
+
+  .icon-btn {
+    width: 38px; height: 38px;
+    background: #1a1a1a;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid #2a2a2a;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .icon-btn:hover { background: #2a2a2a; border-color: #10b981; }
+  .notification-dot {
+    position: absolute; top: 7px; right: 7px;
+    width: 8px; height: 8px;
+    background: #ef4444;
+    border-radius: 50%;
+    border: 2px solid #1a1a1a;
+    box-shadow: 0 0 8px rgba(239,68,68,0.6);
+  }
+
+  /* Sub header for inner screens */
+  .sub-header {
+    background: #0a0a0a;
+    padding: 14px 16px;
+    border-bottom: 1px solid #1a1a1a;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .sub-header-left { display: flex; align-items: center; gap: 12px; }
+  .back-btn {
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    padding: 4px;
+    border-radius: 8px;
+    transition: background 0.2s;
+  }
+  .back-btn:hover { background: #1a1a1a; }
+  .sub-title { color: white; font-size: 14px; font-weight: 700; letter-spacing: -0.3px; }
+  .sub-subtitle { color: #9ca3af; font-size: 11px; font-weight: 400; margin-top: 2px; }
+
+  .live-badge {
+    display: flex; align-items: center; gap: 5px;
+    background: rgba(16,185,129,0.15);
+    padding: 5px 10px;
+    border-radius: 20px;
+    border: 1px solid #10b981;
+  }
+  .live-dot { width: 6px; height: 6px; background: #10b981; border-radius: 50%; animation: pulse 2s infinite; }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .live-badge span { font-size: 10px; color: #10b981; font-weight: 700; letter-spacing: 0.5px; }
+
+  /* Search card */
+  .search-card {
+    margin: -10px 16px 0;
+    position: relative;
+    z-index: 10;
+    background: #0a0a0a;
+    border: 1px solid #1a1a1a;
+    border-radius: 14px;
+    padding: 14px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+  }
+  .accent-line {
+    height: 2px;
+    background: linear-gradient(90deg, #10b981 0%, #06b6d4 50%, #10b981 100%);
+    border-radius: 1px;
+    margin-bottom: 12px;
+  }
+  .input-row { display: flex; gap: 8px; margin-bottom: 10px; align-items: stretch; }
+  .input-field {
+    flex: 1;
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 10px;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .input-field:hover { border-color: #10b981; }
+  .input-label { font-size: 10px; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 3px; display: flex; align-items: center; gap: 4px; }
+  .input-label.from { color: #10b981; }
+  .input-label.to { color: #06b6d4; }
+  .input-value { color: white !important; font-size: 14px; font-weight: 700; letter-spacing: -0.3px; background: none !important; border: none; outline: none; font-family: 'DM Sans', sans-serif; width: 100%; color-scheme: dark; }
+  .input-value::placeholder { color: #6b7280; }
+
+  .swap-btn {
+    width: 38px;
+    background: linear-gradient(135deg, #10b981, #06b6d4);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: transform 0.3s;
+  }
+  .swap-btn:hover { transform: rotate(180deg); }
+
+  .date-passenger-row { display: flex; gap: 8px; }
+  .small-field {
+    flex: 1;
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 10px;
+    padding: 8px 10px;
+    cursor: pointer;
+  }
+  .small-field input {
+    background: none !important; border: none; outline: none;
+    color: white !important; font-size: 12px; font-weight: 700;
+    font-family: 'DM Sans', sans-serif;
+    width: 100%; margin-top: 2px; letter-spacing: -0.2px;
+    color-scheme: dark;
+  }
+  .small-field input[type="date"] {
+    color: white !important;
+    color-scheme: dark;
+  }
+  .small-field input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1) brightness(0.8);
+    cursor: pointer;
+    opacity: 0.7;
+  }
+  .small-field input[type="date"]::-webkit-datetime-edit,
+  .small-field input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+  .small-field input[type="date"]::-webkit-datetime-edit-text,
+  .small-field input[type="date"]::-webkit-datetime-edit-month-field,
+  .small-field input[type="date"]::-webkit-datetime-edit-day-field,
+  .small-field input[type="date"]::-webkit-datetime-edit-year-field {
+    color: white !important;
+  }
+  .small-field select {
+    background: #1a1a1a !important; border: none; outline: none;
+    color: white !important; font-size: 12px; font-weight: 700;
+    font-family: 'DM Sans', sans-serif;
+    width: 100%; margin-top: 2px; letter-spacing: -0.2px;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 24 24' fill='none' stroke='%2310b981' stroke-width='3' stroke-linecap='round'%3e%3cpolyline points='6 9 12 15 18 9'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0 center;
+    padding-right: 12px;
+  }
+  .small-field select option { background: #1a1a1a !important; color: white !important; }
+
+  .primary-btn {
+    width: 100%;
+    padding: 13px;
+    background: linear-gradient(135deg, #10b981, #06b6d4);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(16,185,129,0.25);
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    margin-top: 10px;
+    transition: transform 0.15s, box-shadow 0.2s;
+  }
+  .primary-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.4); }
+  .primary-btn:active { transform: translateY(0); }
+
+  /* Trending section */
+  .section { padding: 16px; }
+  .section-label {
+    color: #06b6d4;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+  .routes-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .route-card {
+    background: #0a0a0a;
+    border: 1px solid #1a1a1a;
+    border-radius: 10px;
+    padding: 12px;
+    position: relative;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .route-card:hover { border-color: #10b981; }
+  .route-card > p:first-child {
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  .route-price { color: #9ca3af; font-size: 10px; font-weight: 400; }
+  .hot-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #ef4444;
+    color: white;
+    padding: 3px 7px;
+    border-radius: 6px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+
+  /* Filters */
+  .filters-row {
+    padding: 10px 16px;
+    background: #000;
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    border-bottom: 1px solid #1a1a1a;
+  }
+  .filters-row::-webkit-scrollbar { display: none; }
+  .filter-chip {
+    padding: 6px 12px;
+    background: #0a0a0a;
+    color: #9ca3af;
+    border: 1px solid #1a1a1a;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+  }
+  .filter-chip:hover { border-color: #10b981; color: white; }
+  .filter-chip.active {
+    background: linear-gradient(135deg, #10b981, #06b6d4);
+    color: white;
+    border: none;
+  }
+
+  /* Bus cards */
+  .bus-card-wrapper { padding: 10px 16px; }
+  .premium-card {
+    background: linear-gradient(135deg, #042f26 0%, #000 100%);
+    border: 2px solid #10b981;
+    border-radius: 12px;
+    padding: 14px;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .premium-card:hover { transform: translateY(-2px); }
+  .premium-accent-top {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #10b981 0%, #06b6d4 100%);
+  }
+  .left-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: #ef4444;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    box-shadow: 0 2px 8px rgba(239,68,68,0.3);
+  }
+  .card-title { color: #10b981; font-size: 15px; font-weight: 700; letter-spacing: -0.4px; margin-top: 3px; }
+  .card-subtitle { color: #9ca3af; font-size: 11px; font-weight: 400; margin: 4px 0 10px; }
+
+  .timeline-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #1a1a1a;
+  }
+  .time-label { color: white; font-size: 14px; font-weight: 700; letter-spacing: -0.3px; }
+  .city-label { color: #9ca3af; font-size: 10px; font-weight: 400; margin-top: 3px; }
+  .timeline-middle { flex: 1; text-align: center; padding: 0 10px; }
+  .timeline-bar {
+    height: 2px;
+    background: linear-gradient(90deg, #10b981 0%, #06b6d4 100%);
+    margin-bottom: 4px;
+  }
+  .timeline-bar-gray { height: 2px; background: #1a1a1a; margin-bottom: 4px; }
+  .duration { color: #06b6d4; font-size: 10px; font-weight: 700; }
+  .duration-gray { color: #9ca3af; font-size: 10px; font-weight: 700; }
+
+  .feature-badges { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+  .feature-chip {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 9px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .feature-chip.green { background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+  .feature-chip.cyan { background: rgba(6,182,212,0.15); color: #06b6d4; border: 1px solid rgba(6,182,212,0.3); }
+
+  .price-row { display: flex; justify-content: space-between; align-items: center; }
+  .price { color: #10b981; font-size: 20px; font-weight: 700; letter-spacing: -0.8px; }
+  .price-white { color: white; font-size: 20px; font-weight: 700; letter-spacing: -0.8px; }
+
+  .book-btn {
+    padding: 9px 18px;
+    background: linear-gradient(135deg, #10b981, #06b6d4);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+    box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+    transition: transform 0.15s;
+  }
+  .book-btn:hover { transform: translateY(-1px); }
+  .book-btn-outline {
+    padding: 9px 18px;
+    background: transparent;
+    color: #06b6d4;
+    border: 2px solid #06b6d4;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+  }
+  .book-btn-outline:hover { background: rgba(6,182,212,0.1); }
+
+  .standard-card {
+    background: #0a0a0a;
+    border: 1px solid #1a1a1a;
+    border-radius: 12px;
+    padding: 14px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .standard-card:hover { border-color: #06b6d4; }
+  .standard-card .card-title { color: white; }
+
+  /* Seat Selection */
+  .seat-legend {
+    padding: 12px 16px;
+    background: #000;
+    display: flex;
+    gap: 12px;
+    border-bottom: 1px solid #1a1a1a;
+    flex-wrap: wrap;
+  }
+  .legend-item { display: flex; align-items: center; gap: 5px; }
+  .legend-box { width: 12px; height: 12px; border-radius: 3px; }
+  .legend-box.available { background: #1a1a1a; border: 1px solid #2a2a2a; }
+  .legend-box.booked { background: #ef4444; }
+  .legend-box.selected { background: #10b981; }
+  .legend-box.premium { background: #06b6d4; }
+  .legend-text { font-size: 10px; color: #9ca3af; font-weight: 500; }
+
+  .driver-section {
+    padding: 20px 16px 10px;
+  }
+  .driver-row {
+    background: #0a0a0a;
+    border: 1px solid #1a1a1a;
+    border-radius: 8px;
+    padding: 10px;
+    text-align: right;
+    margin-bottom: 12px;
+    font-size: 11px;
+    color: #9ca3af;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+
+  .seat-grid-wrapper {
+    background: #0a0a0a;
+    border: 1px solid #1a1a1a;
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .seat-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 24px 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .seat-row.front { grid-template-columns: 1fr 1fr 24px 1fr; }
+  .seat {
+    aspect-ratio: 1;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .seat.available { background: #1a1a1a; border: 1px solid #2a2a2a; }
+  .seat.available:hover { background: #2a2a2a; border-color: #10b981; }
+  .seat.booked { background: #ef4444; cursor: not-allowed; opacity: 0.7; }
+  .seat.selected {
+    background: #10b981;
+    box-shadow: 0 0 0 2px #06b6d4, 0 0 12px rgba(16,185,129,0.5);
+  }
+  .seat.premium { background: #06b6d4; }
+  .seat.premium:hover { background: #0891b2; }
+  .seat.premium.selected { background: #10b981; box-shadow: 0 0 0 2px #06b6d4; }
+
+  /* Summary bar */
+  .summary-bar {
+    padding: 14px 16px;
+    background: #0a0a0a;
+    border-top: 1px solid #1a1a1a;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .summary-info p:first-child { color: #9ca3af; font-size: 10px; font-weight: 500; }
+  .summary-info p:last-child { color: #10b981; font-size: 16px; font-weight: 700; margin-top: 3px; letter-spacing: -0.5px; }
+
+  /* Payment */
+  .summary-card {
+    margin: 14px 16px;
+    background: linear-gradient(135deg, #042f26 0%, #000 100%);
+    border: 1px solid #10b981;
+    border-radius: 12px;
+    padding: 14px;
+  }
+  .summary-top { display: flex; justify-content: space-between; margin-bottom: 8px; }
+  .summary-label { color: #9ca3af; font-size: 10px; font-weight: 500; }
+  .summary-id { color: #06b6d4; font-size: 10px; font-weight: 700; letter-spacing: 0.3px; }
+  .summary-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 0;
+    font-size: 12px;
+    color: white;
+    font-weight: 500;
+  }
+  .summary-row.total {
+    padding-top: 10px;
+    border-top: 1px solid #1a1a1a;
+    margin-top: 4px;
+  }
+  .summary-row.total .label { color: #10b981; font-size: 13px; font-weight: 700; }
+  .summary-row.total .value { color: #10b981; font-size: 17px; font-weight: 700; letter-spacing: -0.5px; }
+
+  .payment-methods { padding: 0 16px 16px; }
+  .payment-item {
+    background: #0a0a0a;
+    border: 1px solid #1a1a1a;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .payment-item:hover { border-color: #10b981; }
+  .payment-item.selected { border: 2px solid #10b981; background: #0a0a0a; }
+
+  .payment-logo {
+    width: 48px; height: 48px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  /* Brand-colored payment logos */
+  .logo-bkash { background: #e2136e; color: white; font-weight: 700; font-size: 13px; font-family: 'DM Sans', sans-serif; letter-spacing: -0.5px; }
+  .logo-nagad { background: linear-gradient(135deg, #f47023, #e63939); color: white; font-weight: 700; font-size: 11px; font-family: 'DM Sans', sans-serif; letter-spacing: -0.3px; }
+  .logo-rocket { background: #8b2a8e; color: white; font-weight: 700; font-size: 11px; font-family: 'DM Sans', sans-serif; letter-spacing: -0.3px; display: flex; align-items: center; justify-content: center; }
+  .logo-visa { background: #1a1f71; color: #f7b600; font-weight: 900; font-size: 14px; font-family: 'DM Sans', sans-serif; letter-spacing: -0.5px; font-style: italic; }
+  .logo-cash { background: #10b981; color: white; }
+
+  .payment-info { flex: 1; }
+  .payment-title { color: white; font-size: 13px; font-weight: 700; letter-spacing: -0.3px; }
+  .payment-sub { color: #9ca3af; font-size: 10px; font-weight: 400; margin-top: 3px; }
+  .payment-check {
+    width: 22px; height: 22px;
+    background: #10b981;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    display: none;
+  }
+  .payment-item.selected .payment-check { display: flex; }
+
+  .timer-warning {
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.3);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .timer-warning p { color: #ef4444; font-size: 11px; font-weight: 700; }
+
+  /* Live Tracking */
+  .map-wrapper {
+    padding: 14px 16px;
+  }
+  .map-box {
+    background: linear-gradient(135deg, #0a1a14 0%, #000 100%);
+    border: 1px solid #1a1a1a;
+    border-radius: 12px;
+    height: 220px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stats-card {
+    margin: 0 16px 14px;
+    background: #0a0a0a;
+    border: 1px solid #1a1a1a;
+    border-radius: 12px;
+    padding: 14px;
+  }
+  .stats-grid {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .stat-item p:first-child {
+    color: #9ca3af;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+  .stat-item p:last-child {
+    margin-top: 4px;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  .stat-item p:last-child span { font-size: 10px; font-weight: 400; color: #9ca3af; }
+  .stat-green { color: #10b981; }
+  .stat-cyan { color: #06b6d4; }
+  .stat-white { color: white; }
+
+  .progress-bar {
+    background: #1a1a1a;
+    height: 6px;
+    border-radius: 3px;
+    margin-bottom: 8px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    background: linear-gradient(90deg, #10b981 0%, #06b6d4 100%);
+    height: 100%;
+    width: 45%;
+    border-radius: 3px;
+    transition: width 1s;
+  }
+  .progress-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: #9ca3af;
+    font-weight: 500;
+  }
+  .progress-labels .current { color: #10b981; font-weight: 700; }
+
+  .next-stop-card {
+    margin: 0 16px 14px;
+    background: linear-gradient(135deg, #042f26 0%, #000 100%);
+    border: 1px solid #10b981;
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .next-stop-info p:first-child {
+    color: #10b981;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .next-stop-info p:nth-child(2) {
+    color: white;
+    font-size: 14px;
+    font-weight: 700;
+    margin-top: 4px;
+    letter-spacing: -0.3px;
+  }
+  .next-stop-info p:last-child {
+    color: #9ca3af;
+    font-size: 10px;
+    margin-top: 2px;
+  }
+
+  .emergency-btn-wrap { padding: 0 16px 14px; }
+  .emergency-btn {
+    width: 100%;
+    padding: 12px;
+    background: rgba(239,68,68,0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239,68,68,0.3);
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: -0.2px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .emergency-btn:hover { background: rgba(239,68,68,0.2); }
+
+  /* Bottom Nav */
+  .bottom-nav {
+    background: #0a0a0a;
+    border-top: 1px solid #1a1a1a;
+    padding: 10px 0;
+    display: flex;
+    justify-content: space-around;
+  }
+  .nav-btn {
+    flex: 1;
+    padding: 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: #6b7280;
+    font-family: 'DM Sans', sans-serif;
+    transition: color 0.2s;
+  }
+  .nav-btn:hover { color: #10b981; }
+  .nav-btn.active { color: #10b981; }
+  .nav-btn.active svg { stroke: #10b981; }
+  .nav-btn svg { stroke: #6b7280; transition: stroke 0.2s; }
+  .nav-btn span { font-size: 10px; font-weight: 700; letter-spacing: -0.2px; }
+
+  /* Success Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal-box {
+    background: #0a0a0a;
+    border: 2px solid #10b981;
+    border-radius: 16px;
+    padding: 32px 24px;
+    max-width: 320px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 20px 80px rgba(16,185,129,0.3);
+  }
+  .modal-icon {
+    width: 64px; height: 64px;
+    background: linear-gradient(135deg, #10b981, #06b6d4);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 16px;
+    box-shadow: 0 4px 20px rgba(16,185,129,0.4);
+  }
+  .modal-title { color: white; font-size: 18px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 8px; }
+  .modal-sub { color: #9ca3af; font-size: 13px; font-weight: 500; margin-bottom: 20px; }
+  .modal-btn {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #10b981, #06b6d4);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #10b981;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    box-shadow: 0 10px 40px rgba(16,185,129,0.4);
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 200;
+  }
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+</style>
+</head>
+<body>
+
+<div class="app-container">
+
+  <!-- STATUS BAR -->
+  <div class="status-bar">
+    <span>9:41</span>
+    <div class="status-right">
+      <svg width="15" height="11" viewBox="0 0 15 11" fill="white"><path d="M1 9h2v2H1zM5 6h2v5H5zM9 3h2v8H9zM13 0h2v11h-2z"/></svg>
+      <svg width="16" height="11" viewBox="0 0 16 11" fill="none" stroke="white" stroke-width="1.5"><rect x="0.5" y="2" width="13" height="7" rx="1.5"/></svg>
+    </div>
+  </div>
+
+  <!-- ====================== SCREEN 1: HOME ====================== -->
+  <div class="screen active" id="screen-home">
+    <div class="main-header">
+      <div class="glow-right"></div>
+      <div class="glow-left"></div>
+      <div class="header-content">
+        <div class="logo-wrap">
+          <div class="logo-box">
+            <svg width="28" height="28" viewBox="0 0 28 28">
+              <rect x="5" y="9" width="18" height="12" fill="white" rx="2"/>
+              <circle cx="9" cy="23" r="2" fill="white"/>
+              <circle cx="19" cy="23" r="2" fill="white"/>
+              <rect x="7" y="11" width="3" height="3" fill="#06b6d4" rx="0.5"/>
+              <rect x="12" y="11" width="3" height="3" fill="#06b6d4" rx="0.5"/>
+              <rect x="17" y="11" width="3" height="3" fill="#06b6d4" rx="0.5"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="app-name">Busify</h1>
+            <p class="app-tagline">Hello, Noman</p>
+          </div>
+        </div>
+        <div class="icon-btn" onclick="showToast('3 new notifications')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21a2 2 0 0 0 4 0"/></svg>
+          <div class="notification-dot"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="search-card">
+      <div class="accent-line"></div>
+      <div class="input-row">
+        <div class="input-field">
+          <p class="input-label from">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 4.5 8 12 8 12s8-7.5 8-12a8 8 0 0 0-8-8z"/></svg>
+            FROM
+          </p>
+          <input type="text" class="input-value" id="fromCity" value="Dhaka" />
+        </div>
+        <button class="swap-btn" onclick="swapCities()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
+        </button>
+        <div class="input-field">
+          <p class="input-label to">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="#06b6d4"/></svg>
+            TO
+          </p>
+          <input type="text" class="input-value" id="toCity" value="Sylhet" />
+        </div>
+      </div>
+      <div class="date-passenger-row" style="display: none;">
+        <div class="small-field">
+          <p class="small-label from">DATE</p>
+          <input type="date" id="travelDate" value="2025-04-20" />
+        </div>
+        <div class="small-field">
+          <p class="small-label to">PASSENGERS</p>
+          <select id="passengerCount">
+            <option value="1">1 Adult</option>
+            <option value="2">2 Adults</option>
+            <option value="3">3 Adults</option>
+            <option value="4">4 Adults</option>
+          </select>
+        </div>
+      </div>
+      <button class="primary-btn" onclick="goToScreen('screen-results')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-5-5"/></svg>
+        Search Buses
+      </button>
+    </div>
+
+    <div class="section">
+      <p class="section-label">Trending Routes</p>
+      <div class="routes-grid">
+        <div class="route-card" onclick="selectRoute('Dhaka', 'Chittagong')">
+          <p>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            Chittagong
+          </p>
+          <p class="route-price">From ৳650</p>
+        </div>
+        <div class="route-card" onclick="selectRoute('Dhaka', 'Cox\'s Bazar')">
+          <span class="hot-badge">HOT</span>
+          <p>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            Cox's Bazar
+          </p>
+          <p class="route-price">From ৳850</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Featured Bus Card on Home -->
+    <div class="bus-card-wrapper">
+      <div class="premium-card" onclick="selectBus(1)">
+        <div class="premium-accent-top"></div>
+        <div class="left-badge">6 LEFT</div>
+        <h3 class="card-title">GreenLine AC Plus</h3>
+        <p class="card-subtitle">AC • WiFi • Charging</p>
+        <div class="timeline-row">
+          <div>
+            <p class="time-label">08:00 PM</p>
+            <p class="city-label">Dhaka</p>
+          </div>
+          <div class="timeline-middle">
+            <div class="timeline-bar"></div>
+            <p class="duration">8h 45m</p>
+          </div>
+          <div style="text-align:right;">
+            <p class="time-label">04:45 AM</p>
+            <p class="city-label">Sylhet</p>
+          </div>
+        </div>
+        <div class="price-row">
+          <p class="price">৳1,250</p>
+          <button class="book-btn" onclick="event.stopPropagation(); selectBus(1)">Book Now</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-nav">
+      <button class="nav-btn active" data-screen="screen-home" onclick="navigateBottom(this)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-5-5"/></svg>
+        <span>Search</span>
+      </button>
+      <button class="nav-btn" data-screen="screen-results" onclick="navigateBottom(this)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18"/></svg>
+        <span>Bookings</span>
+      </button>
+      <button class="nav-btn" data-screen="screen-tracking" onclick="navigateBottom(this)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 4.5 8 12 8 12s8-7.5 8-12a8 8 0 0 0-8-8z"/></svg>
+        <span>Track</span>
+      </button>
+      <button class="nav-btn" onclick="showToast('Account page coming soon')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a7 7 0 0 1 14 0v2"/></svg>
+        <span>Account</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ====================== SCREEN 2: BUS RESULTS ====================== -->
+  <div class="screen" id="screen-results">
+    <div class="sub-header">
+      <div class="sub-header-left">
+        <div class="back-btn" onclick="goToScreen('screen-home')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </div>
+        <div>
+          <p class="sub-title" id="routeTitle">Dhaka → Sylhet</p>
+          <p class="sub-subtitle" id="routeSubtitle">Sun, Apr 20 • 1 passenger</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="filters-row" id="filtersRow">
+      <button class="filter-chip active" onclick="filterBuses(this, 'all')">All (4)</button>
+      <button class="filter-chip" onclick="filterBuses(this, 'ac')">AC</button>
+      <button class="filter-chip" onclick="filterBuses(this, 'nonac')">Non-AC</button>
+      <button class="filter-chip" onclick="filterBuses(this, 'rated')">Top Rated</button>
+    </div>
+
+    <div id="busListContainer">
+      <!-- Buses will be rendered by JavaScript -->
+    </div>
+
+    <div class="bottom-nav">
+      <button class="nav-btn" data-screen="screen-home" onclick="navigateBottom(this)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-5-5"/></svg>
+        <span>Search</span>
+      </button>
+      <button class="nav-btn active" data-screen="screen-results" onclick="navigateBottom(this)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18"/></svg>
+        <span>Bookings</span>
+      </button>
+      <button class="nav-btn" data-screen="screen-tracking" onclick="navigateBottom(this)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 4.5 8 12 8 12s8-7.5 8-12a8 8 0 0 0-8-8z"/></svg>
+        <span>Track</span>
+      </button>
+      <button class="nav-btn" onclick="showToast('Account page coming soon')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a7 7 0 0 1 14 0v2"/></svg>
+        <span>Account</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ====================== SCREEN 3: SEAT SELECTION ====================== -->
+  <div class="screen" id="screen-seats">
+    <div class="sub-header">
+      <div class="sub-header-left">
+        <div class="back-btn" onclick="goToScreen('screen-results')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </div>
+        <div>
+          <p class="sub-title" id="seatBusName">Select Your Seat</p>
+          <p class="sub-subtitle" id="seatBusTime">GreenLine AC Plus • 08:00 PM</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="seat-legend">
+      <div class="legend-item"><div class="legend-box available"></div><span class="legend-text">Available</span></div>
+      <div class="legend-item"><div class="legend-box booked"></div><span class="legend-text">Booked</span></div>
+      <div class="legend-item"><div class="legend-box selected"></div><span class="legend-text">Selected</span></div>
+      <div class="legend-item"><div class="legend-box premium"></div><span class="legend-text">Premium</span></div>
+    </div>
+
+    <div class="driver-section">
+      <div class="driver-row">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg>
+        Driver
+      </div>
+
+      <div class="seat-grid-wrapper" id="seatGrid">
+        <!-- Seats will be generated by JS -->
+      </div>
+    </div>
+
+    <div class="summary-bar">
+      <div class="summary-info">
+        <p id="selectedSeatText">No seat selected</p>
+        <p id="selectedTotal">Select a seat to continue</p>
+      </div>
+      <button class="book-btn" onclick="proceedToPayment()" id="continueBtn" style="opacity:0.5;">Continue</button>
+    </div>
+  </div>
+
+  <!-- ====================== SCREEN 4: PAYMENT ====================== -->
+  <div class="screen" id="screen-payment">
+    <div class="sub-header">
+      <div class="sub-header-left">
+        <div class="back-btn" onclick="goToScreen('screen-seats')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </div>
+        <div>
+          <p class="sub-title">Secure Payment</p>
+          <p class="sub-subtitle" style="display: flex; align-items: center; gap: 4px;">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            SSL Encrypted
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="summary-card">
+      <div class="summary-top">
+        <span class="summary-label">Booking Summary</span>
+        <span class="summary-id">#BSF20250420</span>
+      </div>
+      <div class="summary-row">
+        <span id="paymentBusName">GreenLine AC Plus</span>
+        <span id="paymentSeat">Seat A3</span>
+      </div>
+      <div class="summary-row total">
+        <span class="label">Total</span>
+        <span class="value" id="paymentTotal">৳1,250</span>
+      </div>
+    </div>
+
+    <div class="payment-methods">
+      <p class="section-label">Choose Payment</p>
+
+      <!-- bKash -->
+      <div class="payment-item selected" data-method="bkash" onclick="selectPayment(this)">
+        <div class="payment-logo logo-bkash">bKash</div>
+        <div class="payment-info">
+          <p class="payment-title">bKash Mobile Banking</p>
+          <p class="payment-sub">Instant payment • Most popular</p>
+        </div>
+        <div class="payment-check">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+        </div>
+      </div>
+
+      <!-- Nagad -->
+      <div class="payment-item" data-method="nagad" onclick="selectPayment(this)">
+        <div class="payment-logo logo-nagad">Nagad</div>
+        <div class="payment-info">
+          <p class="payment-title">Nagad</p>
+          <p class="payment-sub">Instant payment</p>
+        </div>
+        <div class="payment-check">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+        </div>
+      </div>
+
+      <!-- Rocket -->
+      <div class="payment-item" data-method="rocket" onclick="selectPayment(this)">
+        <div class="payment-logo logo-rocket">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L8 8h3v6h2V8h3z"/>
+            <path d="M7 16h10v2H7z"/>
+            <path d="M9 20h6v2H9z"/>
+          </svg>
+        </div>
+        <div class="payment-info">
+          <p class="payment-title">Rocket (DBBL)</p>
+          <p class="payment-sub">Dutch-Bangla Mobile Banking</p>
+        </div>
+        <div class="payment-check">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+        </div>
+      </div>
+
+      <!-- Visa / Mastercard -->
+      <div class="payment-item" data-method="card" onclick="selectPayment(this)">
+        <div class="payment-logo logo-visa">VISA</div>
+        <div class="payment-info">
+          <p class="payment-title">Card Payment</p>
+          <p class="payment-sub">Visa, Mastercard, Amex</p>
+        </div>
+        <div class="payment-check">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+        </div>
+      </div>
+
+      <!-- Cash on Boarding -->
+      <div class="payment-item" data-method="cash" onclick="selectPayment(this)">
+        <div class="payment-logo logo-cash">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 10v4M18 10v4"/></svg>
+        </div>
+        <div class="payment-info">
+          <p class="payment-title">Cash on Boarding</p>
+          <p class="payment-sub">Pay when boarding the bus</p>
+        </div>
+        <div class="payment-check">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+        </div>
+      </div>
+
+      <!-- Timer -->
+      <div class="timer-warning">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        <p>Booking expires in <span id="timerText">9:42</span></p>
+      </div>
+
+      <button class="primary-btn" onclick="completePayment()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Pay <span id="payBtnAmount">৳1,250</span> Securely
+      </button>
+    </div>
+  </div>
+
+  <!-- ====================== SCREEN 5: LIVE TRACKING ====================== -->
+  <div class="screen" id="screen-tracking">
+    <div class="sub-header">
+      <div class="sub-header-left">
+        <div class="back-btn" onclick="goToScreen('screen-home')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </div>
+        <div>
+          <p class="sub-title">Live Tracking</p>
+          <p class="sub-subtitle">GreenLine AC Plus</p>
+        </div>
+      </div>
+      <div class="live-badge">
+        <div class="live-dot"></div>
+        <span>LIVE</span>
+      </div>
+    </div>
+
+    <div class="map-wrapper">
+      <div class="map-box">
+        <svg width="100%" height="100%" viewBox="0 0 300 220" style="position: absolute; top: 0; left: 0;">
+          <defs>
+            <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+              <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#1a1a1a" stroke-width="0.5"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#grid)"/>
+          <path d="M 40 180 Q 100 160 140 130" stroke="#10b981" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <path d="M 140 130 Q 180 100 220 80 T 260 50" stroke="#06b6d4" stroke-width="3" fill="none" stroke-linecap="round" stroke-dasharray="4 4"/>
+          <circle cx="40" cy="180" r="6" fill="#10b981"/>
+          <text x="50" y="185" fill="#10b981" font-size="10" font-weight="700" font-family="DM Sans">Dhaka</text>
+          <circle cx="140" cy="130" r="14" fill="#10b981" opacity="0.2"/>
+          <circle cx="140" cy="130" r="9" fill="#10b981" opacity="0.4"/>
+          <circle cx="140" cy="130" r="5" fill="#10b981"/>
+          <rect x="135" y="125" width="10" height="7" fill="#000" rx="1"/>
+          <circle cx="260" cy="50" r="6" fill="#06b6d4"/>
+          <text x="200" y="45" fill="#06b6d4" font-size="10" font-weight="700" font-family="DM Sans">Sylhet</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="stats-card">
+      <div class="stats-grid">
+        <div class="stat-item">
+          <p>SPEED</p>
+          <p class="stat-green">68 <span>km/h</span></p>
+        </div>
+        <div class="stat-item">
+          <p>ETA</p>
+          <p class="stat-cyan">04:45 <span>AM</span></p>
+        </div>
+        <div class="stat-item">
+          <p>DISTANCE</p>
+          <p class="stat-white">142 <span>km</span></p>
+        </div>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="progress-labels">
+        <span>Dhaka</span>
+        <span class="current" id="progressText">45% Complete</span>
+        <span>Sylhet</span>
+      </div>
+    </div>
+
+    <div class="next-stop-card">
+      <div class="next-stop-info">
+        <p>Next Stop</p>
+        <p>Bhairab Bazar</p>
+        <p>Arriving in 25 minutes</p>
+      </div>
+      <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #10b981, #06b6d4); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 4.5 8 12 8 12s8-7.5 8-12a8 8 0 0 0-8-8z"/></svg>
+      </div>
+    </div>
+
+    <div class="emergency-btn-wrap">
+      <button class="emergency-btn" onclick="showToast('Emergency contact: 999')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+        Emergency Contact
+      </button>
+    </div>
+
+    <div class="bottom-nav">
+      <button class="nav-btn" data-screen="screen-home" onclick="navigateBottom(this)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-5-5"/></svg>
+        <span>Search</span>
+      </button>
+      <button class="nav-btn" data-screen="screen-results" onclick="navigateBottom(this)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18"/></svg>
+        <span>Bookings</span>
+      </button>
+      <button class="nav-btn active" data-screen="screen-tracking" onclick="navigateBottom(this)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 4.5 8 12 8 12s8-7.5 8-12a8 8 0 0 0-8-8z"/></svg>
+        <span>Track</span>
+      </button>
+      <button class="nav-btn" onclick="showToast('Account page coming soon')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a7 7 0 0 1 14 0v2"/></svg>
+        <span>Account</span>
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Success Modal -->
+<div class="modal-overlay" id="successModal">
+  <div class="modal-box">
+    <div class="modal-icon">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+    </div>
+    <h2 class="modal-title">Booking Confirmed!</h2>
+    <p class="modal-sub">Your ticket has been booked successfully. Track your bus in real-time.</p>
+    <button class="modal-btn" onclick="closeModal()">View Booking</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">Notification</div>
+
+<script>
+// ====================== DATA ======================
+const busData = [
+  {
+    id: 1,
+    name: "GreenLine AC Plus",
+    type: "ac",
+    features: "AC • WiFi • Charging • Meal",
+    depart: "08:00 PM",
+    arrive: "04:45 AM",
+    duration: "8h 45m",
+    price: 1250,
+    seatsLeft: 6,
+    premium: true,
+    rating: 4.8
+  },
+  {
+    id: 2,
+    name: "EagleExpress",
+    type: "nonac",
+    features: "Non-AC • 48 seats",
+    depart: "06:30 PM",
+    arrive: "04:00 AM",
+    duration: "9h 20m",
+    price: 650,
+    seatsLeft: 22,
+    premium: false,
+    rating: 4.2
+  },
+  {
+    id: 3,
+    name: "Shohagh AC Deluxe",
+    type: "ac",
+    features: "AC • WiFi • Snacks",
+    depart: "09:00 PM",
+    arrive: "05:30 AM",
+    duration: "8h 30m",
+    price: 1100,
+    seatsLeft: 12,
+    premium: false,
+    rating: 4.6
+  },
+  {
+    id: 4,
+    name: "Hanif Paribahan",
+    type: "nonac",
+    features: "Non-AC • Economy",
+    depart: "10:00 PM",
+    arrive: "07:00 AM",
+    duration: "9h 00m",
+    price: 550,
+    seatsLeft: 30,
+    premium: false,
+    rating: 4.0
+  }
+];
+
+let selectedBus = null;
+let selectedSeat = null;
+let selectedPayment = "bkash";
+
+// ====================== NAVIGATION ======================
+function goToScreen(screenId) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(screenId).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  
+  if (screenId === 'screen-results') {
+    renderBuses('all');
+  }
+  if (screenId === 'screen-seats') {
+    generateSeatGrid();
+  }
+}
+
+function navigateBottom(btn) {
+  const screen = btn.getAttribute('data-screen');
+  if (screen) goToScreen(screen);
+}
+
+// ====================== HOME: SWAP & ROUTE SELECTION ======================
+function swapCities() {
+  const from = document.getElementById('fromCity');
+  const to = document.getElementById('toCity');
+  const temp = from.value;
+  from.value = to.value;
+  to.value = temp;
+  showToast('Cities swapped!');
+}
+
+function selectRoute(from, to) {
+  document.getElementById('fromCity').value = from;
+  document.getElementById('toCity').value = to;
+  goToScreen('screen-results');
+  updateRouteTitle();
+}
+
+function updateRouteTitle() {
+  const from = document.getElementById('fromCity').value;
+  const to = document.getElementById('toCity').value;
+  const passengers = document.getElementById('passengerCount').value;
+  const dateVal = document.getElementById('travelDate').value;
+  const date = new Date(dateVal);
+  const dateStr = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  
+  document.getElementById('routeTitle').textContent = `${from} → ${to}`;
+  document.getElementById('routeSubtitle').textContent = `${dateStr} • ${passengers} passenger${passengers > 1 ? 's' : ''}`;
+}
+
+// ====================== RESULTS: FILTER & RENDER ======================
+function filterBuses(btn, type) {
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  renderBuses(type);
+}
+
+function renderBuses(type) {
+  const container = document.getElementById('busListContainer');
+  let filtered = busData;
+  
+  if (type === 'ac') filtered = busData.filter(b => b.type === 'ac');
+  else if (type === 'nonac') filtered = busData.filter(b => b.type === 'nonac');
+  else if (type === 'rated') filtered = busData.filter(b => b.rating >= 4.5).sort((a, b) => b.rating - a.rating);
+  
+  container.innerHTML = filtered.map(bus => {
+    const cardClass = bus.premium ? 'premium-card' : 'standard-card';
+    const priceClass = bus.premium ? 'price' : 'price-white';
+    const btnClass = bus.premium ? 'book-btn' : 'book-btn-outline';
+    const btnText = bus.premium ? 'Book Now' : 'View';
+    
+    return `
+      <div class="bus-card-wrapper">
+        <div class="${cardClass}" onclick="selectBus(${bus.id})">
+          ${bus.premium ? '<div class="premium-accent-top"></div>' : ''}
+          ${bus.seatsLeft <= 10 ? `<div class="left-badge">${bus.seatsLeft} LEFT</div>` : ''}
+          <h3 class="card-title">${bus.name}</h3>
+          <p class="card-subtitle">${bus.features}</p>
+          <div class="timeline-row">
+            <div>
+              <p class="time-label">${bus.depart}</p>
+              <p class="city-label">Dhaka</p>
+            </div>
+            <div class="timeline-middle">
+              <div class="${bus.premium ? 'timeline-bar' : 'timeline-bar-gray'}"></div>
+              <p class="${bus.premium ? 'duration' : 'duration-gray'}">${bus.duration}</p>
+            </div>
+            <div style="text-align:right;">
+              <p class="time-label">${bus.arrive}</p>
+              <p class="city-label">Sylhet</p>
+            </div>
+          </div>
+          ${bus.premium ? `
+          <div class="feature-badges">
+            <span class="feature-chip green">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 4.5 8 12 8 12s8-7.5 8-12a8 8 0 0 0-8-8z"/></svg>
+              GPS Live
+            </span>
+            <span class="feature-chip cyan">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2.5" stroke-linecap="round"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1" fill="#06b6d4"/></svg>
+              WiFi
+            </span>
+          </div>
+          ` : ''}
+          <div class="price-row">
+            <p class="${priceClass}">৳${bus.price.toLocaleString()}</p>
+            <button class="${btnClass}" onclick="event.stopPropagation(); selectBus(${bus.id})">${btnText}</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function selectBus(id) {
+  selectedBus = busData.find(b => b.id === id);
+  document.getElementById('seatBusName').textContent = 'Select Your Seat';
+  document.getElementById('seatBusTime').textContent = `${selectedBus.name} • ${selectedBus.depart}`;
+  goToScreen('screen-seats');
+}
+
+// ====================== SEAT GRID ======================
+function generateSeatGrid() {
+  const grid = document.getElementById('seatGrid');
+  const bookedSeats = ['A2', 'B3', 'D2']; // Simulated booked
+  const premiumSeats = ['C1', 'C2'];
+  selectedSeat = null;
+  updateSeatSummary();
+  
+  let html = '';
+  const rows = [
+    { label: 'A', front: true },
+    { label: 'B', front: false },
+    { label: 'C', front: false },
+    { label: 'D', front: false },
+    { label: 'E', front: false }
+  ];
+  
+  rows.forEach(row => {
+    const cols = row.front ? [1, 2, 3] : [1, 2, 3, 4];
+    html += `<div class="seat-row${row.front ? ' front' : ''}">`;
+    
+    cols.forEach((col, idx) => {
+      const seatId = `${row.label}${col}`;
+      let cls = 'available';
+      if (bookedSeats.includes(seatId)) cls = 'booked';
+      else if (premiumSeats.includes(seatId)) cls = 'premium';
+      
+      html += `<div class="seat ${cls}" data-seat="${seatId}" data-type="${cls}" onclick="selectSeat(this)">${seatId}</div>`;
+      if (idx === 1) html += `<div></div>`; // aisle
+    });
+    
+    html += `</div>`;
+  });
+  
+  grid.innerHTML = html;
+}
+
+function selectSeat(el) {
+  const type = el.getAttribute('data-type');
+  if (type === 'booked') return;
+  
+  // Deselect previous
+  document.querySelectorAll('.seat.selected').forEach(s => {
+    const origType = s.getAttribute('data-type');
+    s.classList.remove('selected');
+    s.classList.add(origType);
+  });
+  
+  // Select new
+  el.classList.remove(type);
+  el.classList.add('selected');
+  el.setAttribute('data-original', type);
+  selectedSeat = el.getAttribute('data-seat');
+  updateSeatSummary();
+}
+
+function updateSeatSummary() {
+  const seatText = document.getElementById('selectedSeatText');
+  const totalText = document.getElementById('selectedTotal');
+  const continueBtn = document.getElementById('continueBtn');
+  
+  if (selectedSeat && selectedBus) {
+    seatText.textContent = `Seat ${selectedSeat} selected`;
+    totalText.textContent = `Total: ৳${selectedBus.price.toLocaleString()}`;
+    continueBtn.style.opacity = '1';
+  } else {
+    seatText.textContent = 'No seat selected';
+    totalText.textContent = 'Select a seat to continue';
+    continueBtn.style.opacity = '0.5';
+  }
+}
+
+function proceedToPayment() {
+  if (!selectedSeat) {
+    showToast('Please select a seat first');
+    return;
+  }
+  document.getElementById('paymentBusName').textContent = selectedBus.name;
+  document.getElementById('paymentSeat').textContent = `Seat ${selectedSeat}`;
+  document.getElementById('paymentTotal').textContent = `৳${selectedBus.price.toLocaleString()}`;
+  document.getElementById('payBtnAmount').textContent = `৳${selectedBus.price.toLocaleString()}`;
+  goToScreen('screen-payment');
+  startTimer();
+}
+
+// ====================== PAYMENT ======================
+function selectPayment(el) {
+  document.querySelectorAll('.payment-item').forEach(p => p.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedPayment = el.getAttribute('data-method');
+}
+
+let timerInterval = null;
+function startTimer() {
+  if (timerInterval) clearInterval(timerInterval);
+  let total = 582; // 9:42
+  const timerText = document.getElementById('timerText');
+  timerInterval = setInterval(() => {
+    total--;
+    if (total <= 0) {
+      clearInterval(timerInterval);
+      showToast('Booking expired!');
+      goToScreen('screen-home');
+      return;
+    }
+    const mins = Math.floor(total / 60);
+    const secs = total % 60;
+    timerText.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+  }, 1000);
+}
+
+function completePayment() {
+  const methodNames = {
+    bkash: 'bKash',
+    nagad: 'Nagad',
+    rocket: 'Rocket',
+    card: 'Card',
+    cash: 'Cash on Boarding'
+  };
+  showToast(`Processing ${methodNames[selectedPayment]} payment...`);
+  
+  setTimeout(() => {
+    document.getElementById('successModal').classList.add('show');
+    if (timerInterval) clearInterval(timerInterval);
+  }, 1500);
+}
+
+function closeModal() {
+  document.getElementById('successModal').classList.remove('show');
+  goToScreen('screen-tracking');
+}
+
+// ====================== TOAST ======================
+function showToast(message) {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+// ====================== LIVE TRACKING ANIMATION ======================
+let progress = 45;
+setInterval(() => {
+  if (document.getElementById('screen-tracking').classList.contains('active')) {
+    progress = Math.min(progress + 0.1, 100);
+    document.getElementById('progressFill').style.width = progress + '%';
+    document.getElementById('progressText').textContent = Math.round(progress) + '% Complete';
+  }
+}, 3000);
+
+// ====================== INIT ======================
+document.getElementById('fromCity').addEventListener('change', updateRouteTitle);
+document.getElementById('toCity').addEventListener('change', updateRouteTitle);
+document.getElementById('passengerCount').addEventListener('change', updateRouteTitle);
+document.getElementById('travelDate').addEventListener('change', updateRouteTitle);
+
+// Initial render
+renderBuses('all');
+</script>
+
+</body>
+</html>
